@@ -9,6 +9,9 @@ import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.edge.EdgeOptions;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 /**
  * Factory class for creating WebDriver instances using WebDriverManager.
  */
@@ -30,6 +33,16 @@ public class DriverFactory {
                 WebDriverManager.chromedriver().setup();
                 ChromeOptions chromeOptions = new ChromeOptions();
                 chromeOptions.addArguments("--remote-allow-origins=*");
+
+                // Create unique user data directory to avoid profile conflicts
+                try {
+                    Path tempProfile = Files.createTempDirectory("chrome-profile-");
+                    chromeOptions.addArguments("--user-data-dir=" + tempProfile.toAbsolutePath().toString());
+                } catch (Exception e) {
+                    // Log error or ignore if temp directory creation fails
+                    e.printStackTrace();
+                }
+
                 return new ChromeDriver(chromeOptions);
 
             case "firefox":
