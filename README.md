@@ -45,7 +45,6 @@ src
 
 ### Clone the Repository
 
-```bash
 git clone https://github.com/AllaKh/Harel_travel_e2e.git
 cd Harel_travel_e2e
 
