@@ -11,6 +11,7 @@ import org.openqa.selenium.edge.EdgeOptions;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.UUID;
 
 /**
  * Factory class for creating WebDriver instances using WebDriverManager.
@@ -34,12 +35,13 @@ public class DriverFactory {
                 ChromeOptions chromeOptions = new ChromeOptions();
                 chromeOptions.addArguments("--remote-allow-origins=*");
 
-                // Create unique user data directory to avoid profile conflicts
+                // Create a truly unique user-data-dir folder (UUID-based)
                 try {
-                    Path tempProfile = Files.createTempDirectory("chrome-profile-");
-                    chromeOptions.addArguments("--user-data-dir=" + tempProfile.toAbsolutePath().toString());
+                    String uniqueProfile = System.getProperty("java.io.tmpdir") + "/chrome-profile-" + UUID.randomUUID();
+                    Path profilePath = Path.of(uniqueProfile);
+                    Files.createDirectories(profilePath);
+                    chromeOptions.addArguments("--user-data-dir=" + profilePath.toAbsolutePath().toString());
                 } catch (Exception e) {
-                    // Log error or ignore if temp directory creation fails
                     e.printStackTrace();
                 }
 
