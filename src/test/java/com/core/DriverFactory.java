@@ -9,10 +9,6 @@ import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.edge.EdgeOptions;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.UUID;
-
 /**
  * Factory class for creating WebDriver instances using WebDriverManager.
  */
@@ -34,17 +30,6 @@ public class DriverFactory {
                 WebDriverManager.chromedriver().setup();
                 ChromeOptions chromeOptions = new ChromeOptions();
                 chromeOptions.addArguments("--remote-allow-origins=*");
-
-                // Create a truly unique user-data-dir folder (UUID-based)
-                try {
-                    String uniqueProfile = System.getProperty("java.io.tmpdir") + "/chrome-profile-" + UUID.randomUUID();
-                    Path profilePath = Path.of(uniqueProfile);
-                    Files.createDirectories(profilePath);
-                    chromeOptions.addArguments("--user-data-dir=" + profilePath.toAbsolutePath().toString());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
                 return new ChromeDriver(chromeOptions);
 
             case "firefox":
