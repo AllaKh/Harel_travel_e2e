@@ -24,6 +24,7 @@ public class DriverFactory {
     /**
      * Container class holding WebDriver instance and optional Chrome profile directory path.
      */
+
     public static class DriverWithProfile {
         public final WebDriver driver;
         public final Path chromeProfilePath;  // null if not Chrome
