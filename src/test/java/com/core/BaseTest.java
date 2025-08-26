@@ -11,9 +11,6 @@ import org.testng.ITestResult;
 import org.testng.annotations.*;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 /**
  * Base test class providing WebDriver setup, teardown, and failure handling.
@@ -21,12 +18,10 @@ import java.nio.file.Path;
 public class BaseTest {
 
     protected WebDriver driver;
-    private Path chromeProfilePath;  // Temporary Chrome profile directory path, null if not Chrome
     protected final Logger logger = LoggerFactory.getLogger(BaseTest.class);
 
     /**
      * Initializes WebDriver before each test method based on the browser parameter.
-     * Stores Chrome temporary profile path for later cleanup.
      *
      * @param browser browser name ("chrome" by default)
      */
@@ -34,15 +29,13 @@ public class BaseTest {
     @Parameters({"browser"})
     public void setUp(@Optional("chrome") String browser) {
         logger.info("Starting WebDriver for browser: {}", browser);
-        DriverFactory.DriverWithProfile driverWithProfile = DriverFactory.createDriverWithProfile(browser);
-        this.driver = driverWithProfile.driver;
-        this.chromeProfilePath = driverWithProfile.chromeProfilePath;
+        driver = DriverFactory.createDriverWithProfile(browser).driver;
     }
 
     /**
      * Tear down method executed after each test.
      * Takes screenshot and page source on failure,
-     * quits WebDriver, and deletes Chrome temp profile directory if exists.
+     * quits WebDriver.
      *
      * @param result TestNG test result instance
      */
@@ -67,19 +60,6 @@ public class BaseTest {
             if (driver != null) {
                 logger.info("Closing WebDriver");
                 driver.quit();
-            }
-
-            // Delete temp Chrome profile directory if exists
-            if (chromeProfilePath != null) {
-                try {
-                    logger.info("Deleting Chrome profile temp directory: {}", chromeProfilePath);
-                    Files.walk(chromeProfilePath)
-                            .sorted((p1, p2) -> p2.compareTo(p1)) // delete children before parent
-                            .map(Path::toFile)
-                            .forEach(java.io.File::delete);
-                } catch (IOException e) {
-                    logger.warn("Failed to delete Chrome profile temp directory: {}", e.getMessage());
-                }
             }
         }
     }
