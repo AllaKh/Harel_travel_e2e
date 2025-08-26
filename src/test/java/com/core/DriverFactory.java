@@ -9,9 +9,15 @@ import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.edge.EdgeOptions;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.UUID;
+
 /**
  * Factory class for creating WebDriver instances using WebDriverManager.
  * Supports Chrome, Firefox, and Edge browsers.
+ * For Chrome, creates a unique temporary profile directory to prevent conflicts.
  */
 public class DriverFactory {
 
@@ -20,9 +26,9 @@ public class DriverFactory {
      */
     public static class DriverWithProfile {
         public final WebDriver driver;
-        public final java.nio.file.Path chromeProfilePath;  // null because we don't use temp profile now
+        public final Path chromeProfilePath;  // null if not Chrome
 
-        public DriverWithProfile(WebDriver driver, java.nio.file.Path chromeProfilePath) {
+        public DriverWithProfile(WebDriver driver, Path chromeProfilePath) {
             this.driver = driver;
             this.chromeProfilePath = chromeProfilePath;
         }
@@ -30,10 +36,12 @@ public class DriverFactory {
 
     /**
      * Creates a WebDriver instance based on the specified browser name.
+     * For Chrome, it assigns a unique --user-data-dir with a temporary directory.
      *
      * @param browser the browser name ("chrome", "firefox", or "edge")
-     * @return DriverWithProfile containing the WebDriver and null profile path
+     * @return DriverWithProfile containing the WebDriver and optional Chrome profile path
      * @throws IllegalArgumentException if the browser is null or unsupported
+     * @throws RuntimeException if the temp profile directory for Chrome fails to create
      */
     public static DriverWithProfile createDriverWithProfile(String browser) {
         if (browser == null) {
@@ -47,9 +55,19 @@ public class DriverFactory {
                 chromeOptions.addArguments("--remote-allow-origins=*");
                 chromeOptions.addArguments("--no-sandbox");
                 chromeOptions.addArguments("--disable-dev-shm-usage");
-                // --user-data-dir argument removed, no temp profile created
 
-                return new DriverWithProfile(new ChromeDriver(chromeOptions), null);
+                Path tempProfile;
+                try {
+                    // Create a uniquely named temporary directory for Chrome profile
+                    tempProfile = Files.createTempDirectory("chrome-profile-" + UUID.randomUUID());
+                    System.out.println("Using Chrome user-data-dir: " + tempProfile.toAbsolutePath());
+
+                    chromeOptions.addArguments("--user-data-dir=" + tempProfile.toAbsolutePath().toString());
+                } catch (IOException e) {
+                    throw new RuntimeException("Failed to create temporary directory for Chrome profile", e);
+                }
+
+                return new DriverWithProfile(new ChromeDriver(chromeOptions), tempProfile);
 
             case "firefox":
                 WebDriverManager.firefoxdriver().setup();

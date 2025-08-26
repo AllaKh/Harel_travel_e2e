@@ -35,7 +35,7 @@ public class BaseTest {
     /**
      * Tear down method executed after each test.
      * Takes screenshot and page source on failure,
-     * quits WebDriver.
+     * then quits WebDriver.
      *
      * @param result TestNG test result instance
      */
@@ -106,7 +106,7 @@ public class BaseTest {
     /**
      * Get active WebDriver instance.
      *
-     * @return WebDriver
+     * @return WebDriver instance
      */
     public WebDriver getDriver() {
         return driver;
